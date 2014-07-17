@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>jp.co.gsol.oss.notifications</groupId>
-	<artifactId>plugin_for_imbox</artifactId>
+	<artifactId>web_notifications_imbox_plugin</artifactId>
 	<packaging>im_module</packaging>
 	<version>1.0.0</version>
 
