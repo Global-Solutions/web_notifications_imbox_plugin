@@ -11,5 +11,9 @@
       <module-id>jp.co.gsol.oss.notifications.web_notifications</module-id>
       <verified-version>1.0.0</verified-version>
     </dependency>
+    <dependency>
+    	<module-id>jp.co.intra_mart.imbox</module-id>
+    	<verified-version min="8.0.7">8.0.7</verified-version>
+    </dependency>
   </dependencies>
 </module>
