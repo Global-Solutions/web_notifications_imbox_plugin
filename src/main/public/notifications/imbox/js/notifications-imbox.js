@@ -1,21 +1,25 @@
 (function() {
-  var $, messageId;
+  var $, messageId, storageFactory;
 
   $ = jQuery;
 
-  messageId = function(tenantId, userCd, id) {
+  messageId = function() {};
+
+  storageFactory = function(prefix, tenantId, userCd) {
     var key;
-    if ((tenantId != null) || (userCd != null)) {
-      return id;
-    }
-    key = "imbox-" + tenantId + "-" + userCd;
-    if (id != null) {
-      LocalStorage(key, id);
-    }
-    return LocalStorage(key);
+    key = "" + prefix + "." + tenantId + "." + userCd;
+    return function(value) {
+      if (value == null) {
+        return localStorage[key];
+      }
+      return localStorage[key] = "" + value;
+    };
   };
 
   this.imboxNotifications = {
+    onLoadHandler: function(tenantId, userCd) {
+      messageId = storageFactory('notifications.imbox', tenantId, userCd);
+    },
     connect: function() {
       var $deferred;
       $deferred = $.Deferred();
@@ -27,9 +31,10 @@
           notifications.showNotification("" + message.postUserName + "@" + message.boxName, {
             options: {
               body: message.message,
-              icon: "notifications/imbox/userIcon/" + message.postUserCd
+              icon: message.iconId ? "notifications/imbox/userIcon/" + message.postUserCd + "?" + message.iconId : void 0
             }
           });
+          messageId(message.messageId);
           console.log(this, arguments, message);
         },
         reconnect: {
@@ -39,19 +44,14 @@
         },
         keepalive: {
           message: function(c) {
-            var m;
-            m = 'ping:' + c;
-            console.log(m);
-            return m;
+            return "ping: " + c;
           },
           interval: 60000
-        },
-        events: {
-          close: function() {
-            console.log(this);
-          }
         }
       }).done(function(op) {
+        op.send(JSON.stringify({
+          messageId: messageId() || ""
+        }));
         $deferred.resolve(op);
         console.log(this, arguments);
       });

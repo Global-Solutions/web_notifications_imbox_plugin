@@ -1,11 +1,18 @@
 $ = jQuery
-messageId = (tenantId, userCd, id) ->
-    return id if tenantId? or userCd?
-    key = "imbox-#{tenantId}-#{userCd}"
-    LocalStorage key, id if id?
-    LocalStorage key
+messageId = -> return
 
+storageFactory = (prefix, tenantId, userCd) ->
+    key = "#{prefix}.#{tenantId}.#{userCd}"
+    (value) ->
+        if not value?
+            return localStorage[key]
+        localStorage[key] = "#{value}"
+        
 @imboxNotifications =
+    onLoadHandler: (tenantId, userCd) ->
+        messageId = storageFactory 'notifications.imbox', tenantId, userCd
+        return
+
     connect: ->
         $deferred = $.Deferred()
         webSockets.connect(
@@ -16,8 +23,10 @@ messageId = (tenantId, userCd, id) ->
                     "#{message.postUserName}@#{message.boxName}",
                     options:
                         body: message.message
-                        icon: "notifications/imbox/userIcon/#{message.postUserCd}"
+                        icon: "notifications/imbox/userIcon/#{message.postUserCd}?#{message.iconId}" \
+                              if message.iconId
                 )
+                messageId message.messageId
                 console.log @, arguments, message
                 return
             reconnect:
@@ -26,16 +35,10 @@ messageId = (tenantId, userCd, id) ->
                     return
             keepalive:
                 message: (c) ->
-                    m = 'ping:' + c
-                    console.log m
-                    m
+                    "ping: #{c}"
                 interval: 60000
-            events:
-                close: ->
-                    console.log @
-                    return
         ).done (op) ->
-            #op.send JSON.stringify messageId: messageId
+            op.send JSON.stringify messageId: messageId() or ""
             $deferred.resolve op
             console.log @, arguments
             return
