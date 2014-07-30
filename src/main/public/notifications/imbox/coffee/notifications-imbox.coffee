@@ -15,6 +15,7 @@ storageFactory = (prefix, tenantId, userCd) ->
 
     connect: ->
         $deferred = $.Deferred()
+        op = {}
         webSockets.connect(
             protocol: 'websocket-imbox-protocol'
             messageHandler: (d) ->
@@ -25,20 +26,24 @@ storageFactory = (prefix, tenantId, userCd) ->
                         body: message.message
                         icon: "notifications/imbox/userIcon/#{message.postUserCd}?#{message.iconId}" \
                               if message.iconId
-                )
+                ) if not message.pong
                 messageId message.messageId
                 console.log @, arguments, message
                 return
             reconnect:
                 done: ->
+                    op.send? JSON.stringify messageId: messageId() or ''
                     console.log @, arguments
                     return
             keepalive:
                 message: (c) ->
-                    "ping: #{c}"
+                    ping = ping: c
+                    ping.messageId = '' if not messageId()
+                    JSON.stringify ping
                 interval: 60000
-        ).done (op) ->
-            op.send JSON.stringify messageId: messageId() or ""
+        ).done (o) ->
+            op = o
+            op.send JSON.stringify messageId: messageId() or ''
             $deferred.resolve op
             console.log @, arguments
             return

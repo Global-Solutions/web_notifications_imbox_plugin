@@ -6,12 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.seasar.util.lang.StringUtil;
+
+
 import com.google.common.base.Optional;
 
 import net.arnx.jsonic.JSON;
 
 import jp.co.gsol.oss.notifications.impl.AbstractWebSocketTask;
-import jp.co.intra_mart.common.aid.jdk.java.lang.StringUtil;
 import jp.co.intra_mart.foundation.context.Contexts;
 import jp.co.intra_mart.foundation.context.model.AccountContext;
 import jp.co.intra_mart.foundation.i18n.datetime.DateTime;
@@ -36,7 +38,7 @@ public class IMBoxTask extends AbstractWebSocketTask {
         final List<String> messages = new ArrayList<>();
         final String count = param.get("waitingCount");
         final String lastMid = param.get("lastMessageId");
-        if (count != null)
+        if (!StringUtil.isEmpty(count))
             initWaitingCount = Integer.valueOf(count);
         if (lastMid == null && initWaitingCount < MAX_INIT_WAIT)
             return messages;
@@ -44,7 +46,7 @@ public class IMBoxTask extends AbstractWebSocketTask {
         final MyBoxService mbs = Services.get(MyBoxService.class);
         final UserOperations uo = Services.get(UserOperations.class);
         final Date today = DateTime.now(ac.getTimeZone()).withTime(0, 0, 0).getDate();
-        System.out.println("uc:" + ac.getUserCd() + " mid:" + lastMid);
+        //System.out.println("uc:" + ac.getUserCd() + " mid:" + lastMid);
         String mid = null;
         try {
             for (Thread t : mbs.getLatestThreads(lastMid))
@@ -67,19 +69,19 @@ public class IMBoxTask extends AbstractWebSocketTask {
             // TODO 自動生成された catch ブロック
             e1.printStackTrace();
         }
-        messageId = mid != null ? mid : lastMid;
-        lastMessageId = lastMid != null ? lastMid : mid;
+        messageId = !StringUtil.isEmpty(mid) ? mid : lastMid;
+        lastMessageId = !StringUtil.isEmpty(lastMid) ? lastMid : mid;
         return messages;
     }
     @Override
     protected Map<String, String> done(final String key, final boolean sent) {
-        final String storeMessageId = messageId != null && sent
-                ? messageId : lastMessageId != null ? lastMessageId : null;
-        IMBoxMessageIdManager.messageId(key, Optional.fromNullable(storeMessageId));
+        final String storeMessageId = !StringUtil.isEmpty(messageId) && sent
+                ? messageId : !StringUtil.isEmpty(lastMessageId) ? lastMessageId : null;
             final Map<String, String> param = new HashMap<>();
-        if (storeMessageId != null)
+        if (!StringUtil.isEmpty(storeMessageId)) {
             param.put("lastMessageId", storeMessageId);
-        else
+            IMBoxMessageIdManager.messageId(key, Optional.of(storeMessageId));
+        } else
             param.put("waitingCount", String.valueOf(initWaitingCount + 1));
         return param;
     }
