@@ -12,6 +12,10 @@ import com.google.common.base.Optional;
 
 import jp.co.gsol.oss.notifications.impl.AbstractTakerImpl;
 
+/**
+ * IMBox protocol implements.
+ * @author Global solutions company limited
+ */
 public class IMBoxTakerImpl extends AbstractTakerImpl {
     @Override
     public Optional<String> processClass() {
@@ -33,11 +37,11 @@ public class IMBoxTakerImpl extends AbstractTakerImpl {
                     final String pong = JSON.encode(id);
                     synchronized (context) {
                         final PrintWriter out = context.startTextMessage();
-                        out.print(pong);
+                        out.print(pong); // initialize browser's memo
                         out.close();
                     }
                 }
-            } else {
+            } else { // set the latest messageId at first time
                 final String mid = messageId instanceof String ? (String) messageId : "";
                 IMBoxMessageIdManager.messageId(key, Optional.of(mid));
             }

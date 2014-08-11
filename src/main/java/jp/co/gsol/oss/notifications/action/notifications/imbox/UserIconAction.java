@@ -19,15 +19,25 @@ import org.seasar.struts.annotation.ActionForm;
 import org.seasar.struts.annotation.Execute;
 import org.seasar.struts.util.ResponseUtil;
 
+/**
+ * user's icon action.
+ * @author Global solutions company limited
+ */
 public class UserIconAction {
 
+    /** user parameter.*/
     @Resource
     @ActionForm
-    UserIconForm userIconForm;
-
+    private UserIconForm userIconForm;
+    /** used for error.*/
     @Resource
-    HttpServletResponse response;
+    private HttpServletResponse response;
 
+    /**
+     * provide user's icon.
+     * @return null
+     * @throws IOException #{@link PublicStorage#open()}
+     */
     @Execute(validator = false, urlPattern = "{userCd}")
     public String index() throws IOException {
         if (!StringUtil.isEmpty(userIconForm.userCd)) {

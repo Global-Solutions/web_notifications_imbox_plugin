@@ -14,6 +14,7 @@ import com.google.common.base.Optional;
 import net.arnx.jsonic.JSON;
 
 import jp.co.gsol.oss.notifications.impl.AbstractWebSocketTask;
+import jp.co.intra_mart.common.platform.log.Logger;
 import jp.co.intra_mart.foundation.context.Contexts;
 import jp.co.intra_mart.foundation.context.model.AccountContext;
 import jp.co.intra_mart.foundation.i18n.datetime.DateTime;
@@ -25,11 +26,21 @@ import jp.co.intra_mart.imbox.service.MyBoxService;
 import jp.co.intra_mart.imbox.service.Services;
 import jp.co.intra_mart.imbox.service.UserOperations;
 
+/**
+ * IMBox protocol's push event handler.
+ * @author Global solutions company limited
+ */
 public class IMBoxTask extends AbstractWebSocketTask {
-    private static final int MAX_INIT_WAIT = 5;
+    /** max times for waiting for last messageId.*/
+    private static final int MAX_INIT_WAIT_COUNT = 5;
+    /** wait for last messageId fetched.*/
+    private static final int WAIT_TIME = 5_000;
 
+    /** current latest messageId.*/
     private String messageId = null;
+    /** last latest messageID.*/
     private String lastMessageId = null;
+    /** counter for wait for last messageId.*/
     private int initWaitingCount = 0;
 
     @Override
@@ -40,13 +51,12 @@ public class IMBoxTask extends AbstractWebSocketTask {
         final String lastMid = param.get("lastMessageId");
         if (!StringUtil.isEmpty(count))
             initWaitingCount = Integer.valueOf(count);
-        if (lastMid == null && initWaitingCount < MAX_INIT_WAIT)
+        if (lastMid == null && initWaitingCount < MAX_INIT_WAIT_COUNT)
             return messages;
         final AccountContext ac = Contexts.get(AccountContext.class);
         final MyBoxService mbs = Services.get(MyBoxService.class);
         final UserOperations uo = Services.get(UserOperations.class);
         final Date today = DateTime.now(ac.getTimeZone()).withTime(0, 0, 0).getDate();
-        //System.out.println("uc:" + ac.getUserCd() + " mid:" + lastMid);
         String mid = null;
         try {
             for (Thread t : mbs.getLatestThreads(lastMid))
@@ -65,9 +75,8 @@ public class IMBoxTask extends AbstractWebSocketTask {
                         message.put("iconId", user.getAttachId());
                     messages.add(JSON.encode(message));
                 }
-        } catch (IMBoxException e1) {
-            // TODO 自動生成された catch ブロック
-            e1.printStackTrace();
+        } catch (final IMBoxException e) {
+            Logger.getLogger().error("event loop abort", e);
         }
         messageId = !StringUtil.isEmpty(mid) ? mid : lastMid;
         lastMessageId = !StringUtil.isEmpty(lastMid) ? lastMid : mid;
@@ -98,9 +107,9 @@ public class IMBoxTask extends AbstractWebSocketTask {
     protected Map<String, String> deferringParam(final String key) {
         final Optional<String> mid = IMBoxMessageIdManager.messageId(key);
         if (mid.isPresent())
-            return deferringIntervalParam;
+            return DEFERRING_INTERVAL_PARAM;
         final Map<String, String> param = new HashMap<>();
-        param.put("interval", String.valueOf(5_000));
+        param.put("interval", String.valueOf(WAIT_TIME));
         param.put("repeate", String.valueOf(1));
         return param;
     }

@@ -29,7 +29,7 @@
         messageHandler: function(d) {
           var message;
           message = JSON.parse(d);
-          if (!message.pong) {
+          if (message.pong == null) {
             notifications.showNotification("" + message.postUserName + "@" + message.boxName, {
               options: {
                 body: message.message,
