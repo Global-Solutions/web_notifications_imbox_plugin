@@ -70,9 +70,11 @@ public class IMBoxTask extends AbstractWebSocketTask {
                     message.put("postUserName", m.getPostUserName());
                     message.put("postUserCd", m.getPostUserCd());
                     message.put("message", m.getMessageText());
-                    final User user = uo.getUser(m.getPostUserCd());
-                    if (user != null)
-                        message.put("iconId", user.getAttachId());
+                    if (null != m.getPostUserDeleteFlag() && !m.getPostUserDeleteFlag().booleanValue()) {
+                        final User user = uo.getUser(m.getPostUserCd());
+                        if (user != null)
+                            message.put("iconId", user.getAttachId());
+                    }
                     messages.add(JSON.encode(message));
                 }
         } catch (final IMBoxException e) {
