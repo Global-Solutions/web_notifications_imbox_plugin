@@ -74,8 +74,6 @@ public class IMBoxTask extends AbstractWebSocketTask {
                         final User user = uo.getUser(m.getPostUserCd());
                         if (user != null)
                             message.put("iconId", user.getAttachId());
-                    } else {
-                        message.put("iconId", m.getAttachId());
                     }
                     messages.add(JSON.encode(message));
                 }
