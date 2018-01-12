@@ -60,7 +60,7 @@ public class IMBoxTask extends AbstractWebSocketTask {
             for (Thread t : mbs.getLatestThreads(lastMid))
                 for (Message m : t.getMessages()) {
                     mid = m.getMessageId();
-                    if (!IMBoxMessageFilter.shouldPush(lastMid, m, ac.getTimeZone()))
+                    if (!IMBoxMessageFilter.shouldPush(m, ac.getTimeZone()))
                         continue;
                     final Map<String, String> message = new HashMap<>();
                     message.put("boxName", m.getBoxName());
