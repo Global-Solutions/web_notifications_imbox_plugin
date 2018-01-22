@@ -1,7 +1,6 @@
 package jp.co.gsol.oss.notifications.impl.plugin.imbox;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +13,10 @@ import com.google.common.base.Optional;
 import net.arnx.jsonic.JSON;
 
 import jp.co.gsol.oss.notifications.impl.AbstractWebSocketTask;
+import jp.co.gsol.oss.notifications.logic.notifications.imbox.IMBoxMessageFilter;
 import jp.co.intra_mart.common.platform.log.Logger;
 import jp.co.intra_mart.foundation.context.Contexts;
 import jp.co.intra_mart.foundation.context.model.AccountContext;
-import jp.co.intra_mart.foundation.i18n.datetime.DateTime;
 import jp.co.intra_mart.imbox.exception.IMBoxException;
 import jp.co.intra_mart.imbox.model.Message;
 import jp.co.intra_mart.imbox.model.Thread;
@@ -56,13 +55,12 @@ public class IMBoxTask extends AbstractWebSocketTask {
         final AccountContext ac = Contexts.get(AccountContext.class);
         final MyBoxService mbs = Services.get(MyBoxService.class);
         final UserOperations uo = Services.get(UserOperations.class);
-        final Date today = DateTime.now(ac.getTimeZone()).withTime(0, 0, 0).getDate();
         String mid = null;
         try {
             for (Thread t : mbs.getLatestThreads(lastMid))
                 for (Message m : t.getMessages()) {
                     mid = m.getMessageId();
-                    if (StringUtil.isEmpty(lastMid) && m.getPostDate().before(today))
+                    if (!IMBoxMessageFilter.shouldPush(m, ac.getTimeZone()))
                         continue;
                     final Map<String, String> message = new HashMap<>();
                     message.put("boxName", m.getBoxName());
