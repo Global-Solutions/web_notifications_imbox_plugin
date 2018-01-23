@@ -3,7 +3,7 @@ gsol-web-notifications imbox plugin
 
 gsol-web-notifications' IMBox plugin for intra-mart Accel Platform.
 
-* Version 2014.8
+* Version 2018.1
 
 ## 概要
 intra-mart Accel Platform(以下、iAP)において、IMBoxのMyBoxに受信したメッセージをHTML5 WebNotificationで通知する機能です。
