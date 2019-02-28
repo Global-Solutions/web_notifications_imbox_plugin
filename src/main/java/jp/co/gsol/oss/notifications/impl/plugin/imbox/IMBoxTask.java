@@ -32,9 +32,6 @@ import jp.co.intra_mart.imbox.service.UserOperations;
 public class IMBoxTask extends AbstractWebSocketTask {
     /** max times for waiting for last messageId.*/
     private static final int MAX_INIT_WAIT_COUNT = 5;
-    /** wait for last messageId fetched.*/
-    private static final int WAIT_TIME = 5_000;
-
     /** current latest messageId.*/
     private String messageId = null;
     /** last latest messageID.*/
@@ -101,16 +98,6 @@ public class IMBoxTask extends AbstractWebSocketTask {
         if (mid.isPresent()) {
             param.put("lastMessageId", mid.get());
         }
-        return param;
-    }
-    @Override
-    protected Map<String, String> deferringParam(final String key) {
-        final Optional<String> mid = IMBoxMessageIdManager.messageId(key);
-        if (mid.isPresent())
-            return DEFERRING_INTERVAL_PARAM;
-        final Map<String, String> param = new HashMap<>();
-        param.put("interval", String.valueOf(WAIT_TIME));
-        param.put("repeate", String.valueOf(1));
         return param;
     }
 }
